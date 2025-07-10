@@ -24,19 +24,20 @@ RUN if ! id -u app >/dev/null 2>&1; then \
 ENV VIRTUAL_ENV=/opt/venv
 ENV PATH="${VIRTUAL_ENV:-/opt/venv}/bin:${PATH}"
 
-# Initialize virtual environment path
-# Change ownership of paths to app:app
-RUN mkdir -p ${VIRTUAL_ENV:-/opt/venv} && \
-    chown -R app:app ${VIRTUAL_ENV:-/opt/venv} && \
-    chown app:app /app
 
 # Copy project files for dependency installation (better caching)
 COPY pyproject.toml requirements.txt ./
 
 # Install dependencies (with cache layer)
-RUN --mount=type=cache,target=${VIRTUAL_ENV:-/opt/venv} python -m venv ${VIRTUAL_ENV:-/opt/venv} && \
+RUN --mount=type=cache,target=/root/.cache python -m venv ${VIRTUAL_ENV:-/opt/venv} && \
     ${VIRTUAL_ENV:-/opt/venv}/bin/pip install --upgrade pip && \
     ${VIRTUAL_ENV:-/opt/venv}/bin/pip install -r requirements.txt
+
+# Initialize virtual environment path
+# Change ownership of paths to app:app
+RUN mkdir -p ${VIRTUAL_ENV:-/opt/venv} && \
+    chown -R app:app ${VIRTUAL_ENV:-/opt/venv} && \
+    chown -R app:app /app
 
 # Switch to non-root user
 USER app
