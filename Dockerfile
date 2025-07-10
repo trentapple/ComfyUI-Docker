@@ -26,9 +26,10 @@ ENV VIRTUAL_ENV=/opt/venv
 ENV PATH="${VIRTUAL_ENV:-/opt/venv}/bin:${PATH}"
 
 # Initialize virtual environment path
-# Change ownership to app user
+# Change ownership of paths to app:app
 RUN mkdir -p ${VIRTUAL_ENV:-/opt/venv} && \
-    chown -R app:app ${VIRTUAL_ENV:-/opt/venv}
+    chown -R app:app ${VIRTUAL_ENV:-/opt/venv} && \
+    chown app:app /app
 
 # Switch to non-root user
 USER app
