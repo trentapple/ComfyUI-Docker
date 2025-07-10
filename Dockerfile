@@ -12,8 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-ENV SERVER_LISTEN_ADDRESS="0.0.0.0" \
-    PYTHONDONTWRITEBYTECODE=1 \
+ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
 # Create non-root user
@@ -31,22 +30,22 @@ RUN mkdir -p ${VIRTUAL_ENV:-/opt/venv} && \
     chown -R app:app ${VIRTUAL_ENV:-/opt/venv} && \
     chown app:app /app
 
+# Copy project files for dependency installation (better caching)
+COPY pyproject.toml requirements.txt ./
+
+# Install dependencies (with cache layer)
+RUN --mount=type=cache,target=${VIRTUAL_ENV:-/opt/venv} python -m venv ${VIRTUAL_ENV:-/opt/venv} && \
+    ${VIRTUAL_ENV:-/opt/venv}/bin/pip install --upgrade pip && \
+    ${VIRTUAL_ENV:-/opt/venv}/bin/pip install -r requirements.txt
+
 # Switch to non-root user
 USER app
 
 # Copy application
 COPY . /app/
 
-# Copy project files for dependency installation (better caching)
-COPY pyproject.toml requirements.txt ./
-
-# Install dependencies
-RUN python -m venv ${VIRTUAL_ENV:-/opt/venv} && \
-    ${VIRTUAL_ENV:-/opt/venv}/bin/pip install --upgrade pip && \
-    ${VIRTUAL_ENV:-/opt/venv}/bin/pip install -r requirements.txt
-
 # Expose port
 EXPOSE 8188
 
 # Command to run the application (SD)
-CMD ["python", "main.py", "--normalvram", "--disable-smart-memory", "--reserve-vram", "1", "--listen", "${SERVER_LISTEN_ADDRESS}"]
+CMD ["python", "main.py", "--normalvram", "--disable-smart-memory", "--reserve-vram", "1"]
