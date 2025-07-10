@@ -35,17 +35,16 @@ RUN --mount=type=cache,target=/root/.cache python -m venv ${VIRTUAL_ENV:-/opt/ve
 
 # Initialize virtual environment path
 # Change ownership of paths to app:app
-RUN mkdir -p ${VIRTUAL_ENV:-/opt/venv} && \
-    chown -R app:app /app
+RUN chown -R app:app /app
 
 # Switch to non-root user
 USER app
 
 # Copy application
-COPY . /app/
+COPY --chown=app:app . /app/
 
 # Expose port
 EXPOSE 8188
 
 # Command to run the application (SD)
-CMD ["python", "main.py", "--normalvram", "--disable-smart-memory", "--reserve-vram", "1"]
+CMD ["python", "main.py", "--listen", "0.0.0.0", "--normalvram", "--disable-smart-memory", "--reserve-vram", "1"]
