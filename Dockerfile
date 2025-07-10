@@ -36,7 +36,6 @@ RUN --mount=type=cache,target=/root/.cache python -m venv ${VIRTUAL_ENV:-/opt/ve
 # Initialize virtual environment path
 # Change ownership of paths to app:app
 RUN mkdir -p ${VIRTUAL_ENV:-/opt/venv} && \
-    chown -R app:app ${VIRTUAL_ENV:-/opt/venv} && \
     chown -R app:app /app
 
 # Switch to non-root user
