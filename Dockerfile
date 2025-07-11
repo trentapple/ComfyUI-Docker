@@ -44,5 +44,5 @@ COPY --chown=app:app . /app/
 # Expose port
 EXPOSE 8188
 
-# Command to run the application (SD)
-CMD ["python", "main.py", "--listen", "0.0.0.0", "--normalvram", "--disable-smart-memory", "--reserve-vram", "1"]
+# Command to run the application
+CMD ["python", "main.py", "--listen", "0.0.0.0"]
