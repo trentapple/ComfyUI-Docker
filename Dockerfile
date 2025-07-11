@@ -27,7 +27,7 @@ ENV PATH="${VIRTUAL_ENV:-/opt/venv}/bin:${PATH}"
 # Copy project files for dependency installation (better caching)
 COPY pyproject.toml requirements.txt ./
 
-# Install dependencies (with cache layer) -- NOTE: the pip install --pre torch ... line allows for newer CUDA version
+# Install dependencies (with cache layer) --pre torch ... allows for newer CUDA version
 RUN --mount=type=cache,target=/root/.cache python -m venv ${VIRTUAL_ENV:-/opt/venv} && \
     ${VIRTUAL_ENV:-/opt/venv}/bin/pip install --upgrade && \
     ${VIRTUAL_ENV:-/opt/venv}/bin/pip install -r requirements.txt
@@ -44,5 +44,5 @@ COPY --chown=app:app . /app/
 # Expose port
 EXPOSE 8188
 
-# Command to run the application (SD)
-CMD ["python", "main.py", "--listen", "0.0.0.0", "--normalvram", "--disable-smart-memory", "--reserve-vram", "1"]
+# Command to run the application
+CMD ["python", "main.py", "--listen", "0.0.0.0"]
