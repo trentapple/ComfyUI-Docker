@@ -1,7 +1,7 @@
 # ComfyUI-Docker
 Docker / podman Dockerfile for ComfyUI
 
-Run build command in the `ComfyUI` [source](https://github.com/comfyanonymous/ComfyUI) folder at desired version to build the image (may substitute docker for podman):
+Run build command in the `ComfyUI` [source](https://github.com/comfyanonymous/ComfyUI) folder at desired version to build the image (may substitute `podman` for `docker`):
 
 `podman build -t localhost/comfyui -f ../ComfyUI-Docker/Dockerfile .`
 
