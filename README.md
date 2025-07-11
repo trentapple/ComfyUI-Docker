@@ -1,13 +1,13 @@
 # ComfyUI-Docker
 Docker / podman Dockerfile for ComfyUI
 
-Run build command in the `ComfyUI` source folder at desired version to build the image (may substitute docker for podman):
+Run build command in the `ComfyUI` [source](https://github.com/comfyanonymous/ComfyUI) folder at desired version to build the image (may substitute `podman` for `docker`):
 
-`podman build -t localhost/ComfyUI -f ../ComfyUI-Docker/Dockerfile .`
+`podman build -t localhost/comfyui -f ../ComfyUI-Docker/Dockerfile .`
 
 Running the container:
 
-`podman run --replace -d --gpus all -p 8188:8188 --name ComfyUI --restart always --mount type=bind,source=$HOME/ComfyUI/models,target=/app/models,Z --mount type=bind,source=$HOME/ComfyUI/user,target=/app/user,Z localhost/ComfyUI`
+`podman run --replace -d --gpus all -p 8188:8188 --name ComfyUI --restart always --mount type=bind,source=$HOME/ComfyUI/models,target=/app/models,Z --mount type=bind,source=$HOME/ComfyUI/user,target=/app/user,Z localhost/comfyui`
 
 *(requires [nvidia-container-toolkit](https://docs.nvidia.com/ai-enterprise/deployment/rhel-with-kvm/latest/podman.html) or similar NVIDIA / CUDA setup for containers)*
 
