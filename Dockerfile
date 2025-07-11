@@ -30,7 +30,6 @@ COPY pyproject.toml requirements.txt ./
 # Install dependencies (with cache layer) -- NOTE: the pip install --pre torch ... line allows for newer CUDA version
 RUN --mount=type=cache,target=/root/.cache python -m venv ${VIRTUAL_ENV:-/opt/venv} && \
     ${VIRTUAL_ENV:-/opt/venv}/bin/pip install --upgrade && \
-    ${VIRTUAL_ENV:-/opt/venv}/bin/pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu128 && \
     ${VIRTUAL_ENV:-/opt/venv}/bin/pip install -r requirements.txt
 
 # Change ownership of paths to app:app
