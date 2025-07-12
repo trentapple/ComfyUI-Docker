@@ -7,7 +7,7 @@ Run build command in the `ComfyUI` [source](https://github.com/comfyanonymous/Co
 
 Running the container:
 
-`podman run --replace -d --gpus all -p 8188:8188 --name ComfyUI --restart always --mount type=bind,source=$HOME/ComfyUI/models,target=/app/models,Z --mount type=bind,source=$HOME/ComfyUI/user,target=/app/user,Z localhost/comfyui`
+`podman run --replace -d --gpus all -p 8188:8188 --name ComfyUI --restart always --mount type=bind,source=$HOME/ComfyUI/models,target=/app/models,Z -v $HOME/ComfyUI/user:/app/user:rw,Z localhost/comfyui`
 
 *(requires [nvidia-container-toolkit](https://docs.nvidia.com/ai-enterprise/deployment/rhel-with-kvm/latest/podman.html) or similar NVIDIA / CUDA setup for containers)*
 
