@@ -8,6 +8,14 @@ import os
 import sys
 import logging
 
+# Create a no-op useTelemetry function that can be imported
+def useTelemetry(*args, **kwargs):
+    """
+    No-op telemetry function that does nothing
+    This replaces any actual telemetry functionality with a harmless no-op
+    """
+    pass
+
 def disable_telemetry():
     """
     Comprehensive telemetry disabling function
@@ -31,14 +39,6 @@ def disable_telemetry():
     for var, value in telemetry_env_vars.items():
         os.environ[var] = value
         print(f"Set {var}={value}")
-    
-    # Create a no-op useTelemetry function that can be imported
-    def useTelemetry(*args, **kwargs):
-        """
-        No-op telemetry function that does nothing
-        This replaces any actual telemetry functionality with a harmless no-op
-        """
-        pass
     
     # Make the no-op function available globally
     globals()['useTelemetry'] = useTelemetry

@@ -83,6 +83,9 @@ jobs:
                 print(f'✓ {var} = {os.environ.get(var)}')
         print('All telemetry environment variables are properly set!')
         "
+        # Test telemetry override functionality
+        echo "Testing telemetry override script..."
+        docker run --rm test-image python /app/verify_telemetry.py
 
     - name: Generate artifact information
       id: artifact_info
