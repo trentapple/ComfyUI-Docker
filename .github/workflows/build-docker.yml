@@ -1,0 +1,142 @@
+name: Build ComfyUI Docker with Disabled Telemetry
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+  schedule:
+    # Build weekly to ensure we have up-to-date base images
+    - cron: '0 0 * * 0'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/comfyui-no-telemetry
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to Container Registry
+      if: github.event_name != 'pull_request'
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Extract metadata (tags, labels) for Docker
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=schedule,pattern=weekly-{{date 'YYYYMMDD'}}
+          type=raw,value=latest,enable={{is_default_branch}}
+          type=sha,prefix={{branch}}-
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile
+        push: ${{ github.event_name != 'pull_request' }}
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        platforms: linux/amd64,linux/arm64
+
+    - name: Test Docker image
+      if: github.event_name == 'pull_request'
+      run: |
+        docker build -t test-image .
+        # Test that telemetry environment variables are set
+        docker run --rm test-image python -c "
+        import os
+        required_vars = [
+            'HF_HUB_DISABLE_TELEMETRY',
+            'DO_NOT_TRACK',
+            'DISABLE_TELEMETRY',
+            'TELEMETRY_DISABLED',
+            'NO_ANALYTICS',
+            'ANALYTICS_DISABLED'
+        ]
+        for var in required_vars:
+            if os.environ.get(var) != '1':
+                print(f'ERROR: {var} is not set to 1')
+                exit(1)
+            else:
+                print(f'✓ {var} = {os.environ.get(var)}')
+        print('All telemetry environment variables are properly set!')
+        "
+
+    - name: Generate artifact information
+      id: artifact_info
+      run: |
+        echo "image_digest=${{ steps.meta.outputs.digest }}" >> $GITHUB_OUTPUT
+        echo "image_tags=${{ steps.meta.outputs.tags }}" >> $GITHUB_OUTPUT
+        echo "build_date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
+
+    - name: Create artifact summary
+      run: |
+        cat >> $GITHUB_STEP_SUMMARY << 'EOF'
+        ## 🐳 ComfyUI Docker Build Summary
+
+        ### ✅ Build Status: SUCCESS
+
+        **🚫 Telemetry Status**: Completely disabled - no analytics or usage data will be collected
+
+        ### 📦 Artifacts Built
+
+        | Property | Value |
+        |----------|-------|
+        | **Image Registry** | `${{ env.REGISTRY }}` |
+        | **Image Name** | `${{ env.IMAGE_NAME }}` |
+        | **Build Date** | `${{ steps.artifact_info.outputs.build_date }}` |
+        | **Git SHA** | `${{ github.sha }}` |
+
+        ### 🏷️ Image Tags
+        ```
+        ${{ steps.meta.outputs.tags }}
+        ```
+
+        ### 🔧 Telemetry Disabled Features
+        - ✅ HuggingFace Hub telemetry disabled
+        - ✅ DO_NOT_TRACK environment variable set  
+        - ✅ All analytics and usage tracking disabled
+        - ✅ Custom telemetry override script applied
+        - ✅ Modified main.py with enhanced telemetry blocking
+
+        ### 🚀 Usage
+        
+        To pull and run the latest image:
+        ```bash
+        docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+        docker run -d --gpus all -p 8188:8188 --name comfyui ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+        ```
+
+        ### 📋 Environment Variables Set
+        - `HF_HUB_DISABLE_TELEMETRY=1`
+        - `DO_NOT_TRACK=1`
+        - `DISABLE_TELEMETRY=1`
+        - `TELEMETRY_DISABLED=1`
+        - `NO_ANALYTICS=1`
+        - `ANALYTICS_DISABLED=1`
+        - `HUGGINGFACE_HUB_DISABLE_TELEMETRY=1`
+        - `TRANSFORMERS_OFFLINE=1`
+        - `TORCH_TELEMETRY_DISABLED=1`
+        EOF
