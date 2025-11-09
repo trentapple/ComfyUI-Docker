@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.9
-FROM python:3.12-slim
+FROM python:3.13-slim
 
 WORKDIR /app
 
@@ -30,7 +30,7 @@ COPY pyproject.toml requirements.txt ./
 # Install dependencies (with cache layer) --pre torch ... allows for newer CUDA version
 RUN --mount=type=cache,target=/root/.cache python -m venv ${VIRTUAL_ENV:-/opt/venv} && \
     ${VIRTUAL_ENV:-/opt/venv}/bin/pip install --upgrade && \
-    ${VIRTUAL_ENV:-/opt/venv}/bin/pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu128 && \
+    ${VIRTUAL_ENV:-/opt/venv}/bin/pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu130 && \
     ${VIRTUAL_ENV:-/opt/venv}/bin/pip install -r requirements.txt
 
 # Change ownership of paths to app:app
