@@ -13,27 +13,7 @@ Running the container:
 
 ## Security and Privacy
 
-The image is built with several security and privacy defaults:
-
-- **Non-root user** — the server runs as an unprivileged `app` user inside the container.
-- **HTTPS apt sources** — package downloads use HTTPS even within the image build.
-- **`HF_HUB_DISABLE_TELEMETRY=1`** and **`DO_NOT_TRACK=1`** — environment variables that signal to Hugging Face Hub and other libraries that respect the [Do Not Track](https://www.eff.org/issues/do-not-track) convention not to phone home.
-- **`--disable-api-nodes`** — prevents ComfyUI from loading API nodes that make outbound calls to external services (e.g. `api.comfy.org`) and suppresses matching frontend network activity. Remove this flag if you intentionally use API-backed nodes.
-- **`--disable-auto-launch`** — suppresses the automatic browser launch that is irrelevant in a headless container.
-- **`--listen 0.0.0.0`** — required for Docker bridge networking. Restrict access at the host by only publishing the port to `127.0.0.1` (e.g. `-p 127.0.0.1:8188:8188`) and placing a reverse proxy with authentication and TLS in front of it if the host is reachable from untrusted networks.
-
-### Additional privacy flags (override CMD as needed)
-
-| Flag | Effect |
-|---|---|
-| `--disable-metadata` | Do not embed prompt/workflow metadata into generated image files. |
-| `--front-end-version comfyanonymous/ComfyUI@<version>` | Pin the bundled frontend to a specific version and avoid fetching updates from GitHub at startup. |
-
-To pass additional flags, override the command at runtime:
-
-```
-podman run ... localhost/comfyui python main.py --listen 0.0.0.0 --disable-auto-launch --disable-api-nodes --disable-metadata
-```
+The image runs as a non-root user and sets `HF_HUB_DISABLE_TELEMETRY=1` and `DO_NOT_TRACK=1` to opt out of library telemetry. The default command includes `--disable-api-nodes` (prevents outbound calls to external API services; remove if you use API-backed nodes) and `--disable-auto-launch`. `--listen 0.0.0.0` is required for Docker bridge networking — restrict host-side exposure via the published port or a reverse proxy.
 
 ## Troubleshooting
 
