@@ -15,6 +15,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
+# Privacy: opt out of HuggingFace Hub telemetry and honour the universal DO_NOT_TRACK signal
+ENV HF_HUB_DISABLE_TELEMETRY=1 \
+    DO_NOT_TRACK=1
+
 # Create non-root user
 RUN if ! id -u app >/dev/null 2>&1; then \
       useradd -rUM -s /usr/sbin/nologin app; \
@@ -29,7 +33,7 @@ COPY pyproject.toml requirements.txt ./
 
 # Install dependencies (with cache layer) --pre torch ... allows for newer CUDA version
 RUN --mount=type=cache,target=/root/.cache python -m venv ${VIRTUAL_ENV:-/opt/venv} && \
-    ${VIRTUAL_ENV:-/opt/venv}/bin/pip install --upgrade && \
+    ${VIRTUAL_ENV:-/opt/venv}/bin/pip install --upgrade pip && \
     ${VIRTUAL_ENV:-/opt/venv}/bin/pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu130 && \
     ${VIRTUAL_ENV:-/opt/venv}/bin/pip install -r requirements.txt
 
@@ -45,5 +49,15 @@ COPY --chown=app:app . /app/
 # Expose port
 EXPOSE 8188
 
-# Command to run the application
-CMD ["python", "main.py", "--listen", "0.0.0.0"]
+# Command to run the application.
+#
+# --listen 0.0.0.0      Required for Docker bridge networking; restrict host-side access via the
+#                       published port and/or a reverse proxy rather than changing this value.
+# --disable-auto-launch Suppresses the automatic browser-open that is irrelevant in a container.
+# --disable-api-nodes   Prevents the frontend and API nodes from making outbound calls to
+#                       external services (e.g. api.comfy.org), keeping the container
+#                       network-quiet by default.
+CMD ["python", "main.py", \
+     "--listen", "0.0.0.0", \
+     "--disable-auto-launch", \
+     "--disable-api-nodes"]
